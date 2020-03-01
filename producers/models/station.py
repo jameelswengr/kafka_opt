@@ -19,7 +19,7 @@ class Station(Producer):
     #
     # TODO: Define this value schema in `schemas/station_value.json, then uncomment the below
     #
-    #value_schema = avro.load(f"{Path(__file__).parents[0]}/schemas/arrival_value.json")
+    value_schema = avro.load(f"{Path(__file__).parents[0]}/schemas/arrival_value.json")
 
     def __init__(self, station_id, name, color, direction_a=None, direction_b=None):
         self.name = name
@@ -37,13 +37,14 @@ class Station(Producer):
         # replicas
         #
         #
-        topic_name = f"{station_name}" # TODO: Come up with a better topic name
+        #topic_name = "com.udacity.ctastation" # TODO: Come up with a better topic name
+        topic_name = f"com.cta.stations.{station_name}"
         super().__init__(
             topic_name,
             key_schema=Station.key_schema,
-            # TODO: value_schema=Station.value_schema, # TODO: Uncomment once schema is defined
-            # TODO: num_partitions=???,
-            # TODO: num_replicas=???,
+            value_schema=Station.value_schema, # TODO: Uncomment once schema is defined
+            num_partitions=3,
+            num_replicas=1
         )
 
         self.station_id = int(station_id)
@@ -63,17 +64,23 @@ class Station(Producer):
         #
         #
         logger.info("arrival kafka integration incomplete - skipping")
-        #self.producer.produce(
-        #    topic=self.topic_name,
-        #    key={"timestamp": self.time_millis()},
-        #    value={
-        #        #
-        #        #
-        #        # TODO: Configure this
-        #        #
-        #        #
-        #    },
-        #)
+        self.producer.produce(
+            topic=self.topic_name,
+            key={"timestamp": self.time_millis()},
+           #value={
+           #    "stop_id" : self.stop_id,
+           #    "direction_id": direction,
+           #    "stop_name": self.stop_name,
+           #    "station_name": self.station_name
+           #    "station_descriptive_name" : 
+           #    "station_id": self.station_id
+           #    "order": 
+           #    "red": color.red,
+           #    "blue": color.blue,
+           #    "green": color.green
+           #},
+            value =  asdict(Station())
+        )
 
     def __str__(self):
         return "Station | {:^5} | {:<30} | Direction A: | {:^5} | departing to {:<30} | Direction B: | {:^5} | departing to {:<30} | ".format(
